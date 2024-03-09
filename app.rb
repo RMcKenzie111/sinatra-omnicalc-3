@@ -71,3 +71,25 @@ post("/umbrella_result") do
     cookies["last_long"] = @lng
   erb(:umbrella_result)
 end
+
+get("/message") do
+  erb(:message)
+end
+
+post("/response") do
+  erb(:response)
+end
+
+get("/chat") do
+  erb(:chat)
+end
+
+post("/clear_chat") do
+  cookies[:chat_history] = JSON.generate([])
+  redirect to("/chat")
+end
+
+post("/chat")
+  cookies[:chat_history] = JSON.generate(@chat_history)
+  erb(:chat)
+end
