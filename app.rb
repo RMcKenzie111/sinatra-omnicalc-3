@@ -4,6 +4,8 @@ require "http"
 require "json"
 require "sinatra/cookies"
 
+OPENAI_API_KEY = ENV.fetch("OPENAI_API_KEY")
+
 get("/") do
   erb(:home)
 end
@@ -77,7 +79,40 @@ get("/message") do
 end
 
 post("/response") do
-  erb(:response)
+  request_headers_hash = { 
+  "Authorization" => "Bearer #{ENV.fetch("OPENAI_API_KEY")}",
+  "content-type" => "application/json" 
+}
+
+  request_body_hash = {
+  "model" => "gpt-3.5-turbo",
+  "messages" => [
+    {
+      "role" => "system",
+      "content" => "You are a helpful assistant who talks like Shakespeare."
+    },
+    {
+      "role" => "user",
+      "content" => "#{params.fetch("the_message")}"
+    }
+  ]
+}
+
+request_body_json = JSON.generate(request_body_hash)
+
+raw_response = HTTP.headers(request_headers_hash).post(
+  "https://api.openai.com/v1/chat/completions",
+  :body => request_body_json
+).to_s
+
+@parsed_responses = JSON.parse(raw_response)
+
+@replies = @parsed_responses.dig("choices", 0, "message", "content")
+#@format_replies =replies.gsub("\n",)
+cookies["input"] = params.fetch("the_message")
+
+
+  erb(:response) 
 end
 
 get("/chat") do
@@ -85,11 +120,11 @@ get("/chat") do
 end
 
 post("/clear_chat") do
-  cookies[:chat_history] = JSON.generate([])
+  #cookies[:chat_history] = JSON.generate([])
   redirect to("/chat")
 end
 
-post("/chat")
-  cookies[:chat_history] = JSON.generate(@chat_history)
+post("/chat") do
+  #cookies[:chat_history] = JSON.generate(@chat_history)
   erb(:chat)
 end
