@@ -1,0 +1,25 @@
+<dl>
+  <% @chat_history.each do |entry|%>
+    <dt>user</dt>
+    <dd><%= entry[messgae] %></dd>
+    <dt>assistant</dt>
+    <dd><%= entry[message] %></dd>
+  <% end %>
+</dl>
+
+<form action="/chat_messages" method="post">
+  <label for="user_messages">
+      Your message:
+  </label>
+  <input id="user_messages" type="text" name="the_messages">
+
+  <button>
+    Submit
+  </button>
+</form>
+
+<form action="/clear_chat" method:="post">
+  <button>
+    Clear chat history
+  </button>
+</form>

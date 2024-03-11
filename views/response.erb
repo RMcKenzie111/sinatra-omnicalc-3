@@ -8,7 +8,7 @@
 
   <body>
    <p>Your message:</p>
-   <p><%= @parsed_responses %></p>
+   <p><%= "#{params.fetch("the_message")}" %></p>
    <p>GPT-4's response:</p>
    <p><%= @replies %></p>
      

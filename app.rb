@@ -64,7 +64,7 @@ post("/umbrella_result") do
     if @any_precip == true
       @result = "You might want to carry an umbrella!"
     else
-      @result = "You probaly won't need an umbrella today."
+      @result = "You probably won't need an umbrella today."
     end
   end
 
@@ -116,15 +116,52 @@ cookies["input"] = params.fetch("the_message")
 end
 
 get("/chat") do
+  #@chat_history = request.cookies["chat_history"] ? JSON.parse(request.cookies["chat_history"]) : []
   erb(:chat)
 end
 
 post("/clear_chat") do
-  #cookies[:chat_history] = JSON.generate([])
+  cookies[:chat_history] = JSON.generate([])
   redirect to("/chat")
 end
 
-post("/chat") do
-  #cookies[:chat_history] = JSON.generate(@chat_history)
+post("/chat_messages") do
+input_messages = params["user_messages"]
+  request_headers_hash = { 
+  "Authorization" => "Bearer #{ENV.fetch("OPENAI_API_KEY")}",
+  "content-type" => "application/json" 
+}
+
+  request_body_hash = {
+  "model" => "gpt-3.5-turbo",
+  "messages" => [
+    {
+      "role" => "system",
+      "content" => "You are a helpful assistant who talks like Shakespeare."
+    },
+    {
+      "role" => "user",
+      "content" => "#{params.fetch("the_message")}"
+    }
+  ]
+}
+
+request_body_json = JSON.generate(request_body_hash)
+
+raw_response = HTTP.headers(request_headers_hash).post(
+  "https://api.openai.com/v1/chat/completions",
+  :body => request_body_json
+).to_s
+
+parsed_responses = JSON.parse(raw_response)
+assistant_res = parsed_responses.dig("choices", 0, "message", "content")
+
+@chat_history = request.cookies["chat_history"] ? JSON.parse(request.cookies["chat_history"]) : []
+chat_history.push({"role" => "user", "message" => input_messages})
+chat_history.push({"role" => "assistant", "message" => assistant_res})
+#@format_replies =replies.gsub("\n",)
+cookies["chat_history"] = JSON.generate(@chat_history)
+
+
   erb(:chat)
 end
