@@ -1,9 +1,7 @@
 <dl>
   <% @chat_history.each do |entry|%>
-    <dt>user</dt>
-    <dd><%= entry[messgae] %></dd>
-    <dt>assistant</dt>
-    <dd><%= entry[message] %></dd>
+    <dt><%= entry["role"] %></dd>
+    <dd><%= entry["content"] %></dd>
   <% end %>
 </dl>
 
@@ -18,7 +16,8 @@
   </button>
 </form>
 
-<form action="/clear_chat" method:="post">
+<hr>
+<form action="/clear_chat" method="post">
   <button>
     Clear chat history
   </button>
